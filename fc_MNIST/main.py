@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torchvision.datasets.mnist import MNIST
 
 
-MINI_BATCH_SIZE = 20
+MINI_BATCH_SIZE = 100
 LOADING_WORKERS = 2
 TRAINING_EPOCHS = 20
 
@@ -65,10 +65,13 @@ class Model(torch.nn.Module):
         for i, data in enumerate(tqdm(self.get_data_minibatch(train=False))):
             x_test, y_test = self._convert_data_to_tensors(data)
             y_pred = self.predict(x_test)
+            y_test = y_test.data.numpy()
+            y_pred = y_pred.data.numpy()
             correct_pred += sum(y_pred == y_test)
             total_samples += len(y_test)
         sleep(0.01)  # Make sure tqdm prints is finished
         print('Total samples', total_samples)
+        print('Correct predictions:', correct_pred)
         print('Total accuracy %.2f %%'
               % (100. * float(correct_pred) / float(total_samples)))
 
@@ -77,7 +80,7 @@ class Model(torch.nn.Module):
         _, data = next(it)
         x_test, y_test = self._convert_data_to_tensors(data)
         y_pred = self.predict(x_test)
-        if int(y_pred) == int(y_test) :
+        if int(y_pred) == int(y_test):
             print("CORRECT!")
         else:
             print("WRONG!")
