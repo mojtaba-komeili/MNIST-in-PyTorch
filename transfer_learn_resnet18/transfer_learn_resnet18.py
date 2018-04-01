@@ -11,18 +11,30 @@ from torchvision.datasets.mnist import MNIST
 MINI_BATCH_SIZE = 16
 LOADING_WORKERS = 2
 TRAINING_EPOCHS = 2
+# Transfer learning scenario
+# 1- Fixing the parameters for all layer except the attached layer
+# 2-(default) Updating the entire model
+TRAINING_MODE = 1
 
 
 class Model():
     def __init__(self, n_hidden=120):
         transferred_model = torchvision.models.resnet18()
-        for param in transferred_model.parameters():
-            param.requires_grad = False
         num_last_layer_feats = transferred_model.fc.in_features
         fully_connected = torch.nn.Linear(num_last_layer_feats, 10)
+
+        if TRAINING_MODE == 1:
+            print('Training the parameters in last layer.')
+            for param in transferred_model.parameters():
+                param.requires_grad = False
+            optimization_params = fully_connected.parameters()
+        else:
+            print('Training the full model.')
+            optimization_params = transferred_model.parameters()
+
         transferred_model.fc = fully_connected
         self.model = transferred_model
-        self.optimizer = torch.optim.Adam(fully_connected.parameters())
+        self.optimizer = torch.optim.Adam(optimization_params)
         self.criterion = torch.nn.CrossEntropyLoss()
 
     def _convert_data_to_tensors(self, data):
@@ -109,5 +121,5 @@ class Model():
 if __name__ == '__main__':
     model = Model()
     model.train()
-#    model.estimate_model_accuracy()
-#    model.show_sample_prediction()
+    model.estimate_model_accuracy()
+    model.show_sample_prediction()
