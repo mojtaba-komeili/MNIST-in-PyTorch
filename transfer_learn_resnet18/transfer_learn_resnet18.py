@@ -8,22 +8,22 @@ import torch.nn.functional as F
 from torchvision.datasets.mnist import MNIST
 
 
-MINI_BATCH_SIZE = 100
+MINI_BATCH_SIZE = 16
 LOADING_WORKERS = 2
-TRAINING_EPOCHS = 20
+TRAINING_EPOCHS = 2
 
 
-class Model(torch.nn.Module):
+class Model():
     def __init__(self, n_hidden=120):
-        super(Model, self).__init__()
-        self.fc1 = torch.nn.Linear(28*28, n_hidden)
-        self.fc2 = torch.nn.Linear(n_hidden, 10)
-        self.optimizer = torch.optim.Adam(self.parameters())
+        transferred_model = torchvision.models.resnet18()
+        for param in transferred_model.parameters():
+            param.requires_grad = False
+        num_last_layer_feats = transferred_model.fc.in_features
+        fully_connected = torch.nn.Linear(num_last_layer_feats, 10)
+        transferred_model.fc = fully_connected
+        self.model = transferred_model
+        self.optimizer = torch.optim.Adam(fully_connected.parameters())
         self.criterion = torch.nn.CrossEntropyLoss()
-
-    def _flatten_mini_batch(self, x):
-        num_samples = x.shape[0]
-        return x.contiguous().view([num_samples, -1])
 
     def _convert_data_to_tensors(self, data):
         x_test, y_test = data
@@ -32,10 +32,11 @@ class Model(torch.nn.Module):
         return x_test, y_test
 
     def forward(self, x):
-        x = self._flatten_mini_batch(x)
-        y = F.relu(self.fc1(x))
-        y = self.fc2(y)
-        return y
+        x_shape = list(x.shape)
+        x_shape[1] = 3
+        x_higher = torch.autograd.Variable(torch.zeros(x_shape))
+        x_higher[:, 0, :, :]
+        return self.model.forward(x_higher)
 
     def train(self, mode=True, epochs=TRAINING_EPOCHS):
         for e in range(epochs):
@@ -91,8 +92,13 @@ class Model(torch.nn.Module):
         plt.show()
 
     def get_data_minibatch(self, train=False, n_mini_batch = MINI_BATCH_SIZE):
-        mnist_dataset = MNIST('../data', train=train, download=True,
-                              transform=torchvision.transforms.ToTensor())
+        tr = torchvision.transforms.Compose([
+            torchvision.transforms.Resize(256),
+            torchvision.transforms.CenterCrop(224),
+            torchvision.transforms.ToTensor()
+        ])
+        mnist_dataset = MNIST('../data', train=train,
+                              download=True,transform=tr)
         loader = torch.utils.data.DataLoader(mnist_dataset,
                                                    batch_size=n_mini_batch,
                                                    shuffle=True,
@@ -103,5 +109,5 @@ class Model(torch.nn.Module):
 if __name__ == '__main__':
     model = Model()
     model.train()
-    model.estimate_model_accuracy()
-    model.show_sample_prediction()
+#    model.estimate_model_accuracy()
+#    model.show_sample_prediction()
