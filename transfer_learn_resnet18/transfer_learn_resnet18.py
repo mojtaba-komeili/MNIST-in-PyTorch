@@ -24,7 +24,7 @@ class Model():
         fully_connected = torch.nn.Linear(num_last_layer_feats, 10)
 
         if TRAINING_MODE == 1:
-            print('Training the parameters in last layer.')
+            print('Only training the parameters in the last layer.')
             for param in transferred_model.parameters():
                 param.requires_grad = False
             optimization_params = fully_connected.parameters()
