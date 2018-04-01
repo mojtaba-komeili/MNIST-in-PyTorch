@@ -47,7 +47,7 @@ class Model():
         x_shape = list(x.shape)
         x_shape[1] = 3
         x_higher = torch.autograd.Variable(torch.zeros(x_shape))
-        x_higher[:, 0, :, :]
+        x_higher[:, 0, :, :] = x
         return self.model.forward(x_higher)
 
     def train(self, mode=True, epochs=TRAINING_EPOCHS):
