@@ -8,9 +8,9 @@ import torch.nn.functional as F
 from torchvision.datasets.mnist import MNIST
 
 
-MINI_BATCH_SIZE = 16
+MINI_BATCH_SIZE = 32
 LOADING_WORKERS = 2
-TRAINING_EPOCHS = 2
+TRAINING_EPOCHS = 10
 # Transfer learning scenario
 # 1- Fixing the parameters for all layer except the attached layer
 # 2-(default) Updating the entire model
