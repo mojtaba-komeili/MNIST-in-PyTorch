@@ -9,16 +9,17 @@ from torchvision.datasets.mnist import MNIST
 
 
 MINI_BATCH_SIZE = 32
-LOADING_WORKERS = 2
-TRAINING_EPOCHS = 10
+LOADING_WORKERS = 4
+TRAINING_EPOCHS = 20
 # Transfer learning scenario
 # 1- Fixing the parameters for all layer except the attached layer
 # 2-(default) Updating the entire model
 TRAINING_MODE = 1
+USE_GPU = True
 
-
-class Model():
+class Model(torch.nn.Module):
     def __init__(self, n_hidden=120):
+        super(Model, self).__init__()
         transferred_model = torchvision.models.resnet18()
         num_last_layer_feats = transferred_model.fc.in_features
         fully_connected = torch.nn.Linear(num_last_layer_feats, 10)
@@ -39,6 +40,9 @@ class Model():
 
     def _convert_data_to_tensors(self, data):
         x_test, y_test = data
+        if USE_GPU and torch.cuda.is_available():
+            x_test = x_test.cuda()
+            y_test = y_test.cuda()
         x_test = torch.autograd.Variable(x_test)
         y_test = torch.autograd.Variable(y_test)
         return x_test, y_test
@@ -46,7 +50,10 @@ class Model():
     def forward(self, x):
         x_shape = list(x.shape)
         x_shape[1] = 3
-        x_higher = torch.autograd.Variable(torch.zeros(x_shape))
+        x_higher = torch.zeros(x_shape)
+        if USE_GPU and torch.cuda.is_available():
+            x_higher = x_higher.cuda()
+        x_higher = torch.autograd.Variable(x_higher)
         x_higher[:, 0, :, :] = x
         return self.model.forward(x_higher)
 
@@ -120,6 +127,10 @@ class Model():
 
 if __name__ == '__main__':
     model = Model()
+    if USE_GPU and torch.cuda.is_available():
+        if torch.cuda.device_count() > 1:
+            model = torch.nn.DataParallel(model)
+        model = model.cuda()
     model.train()
     model.estimate_model_accuracy()
     model.show_sample_prediction()
