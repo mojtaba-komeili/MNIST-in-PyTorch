@@ -1,9 +1,7 @@
 import torch
 import torchvision
 from torchvision.datasets.mnist import MNIST
-from base_model import (BaseModel, run_model,
-                        DEFAULT_MINI_BATCH_SIZE,
-                        DEFAULT_LOADING_WORKERS)
+from base_model import BaseModel, run_model
 
 # Transfer learning scenario
 # 1- Fixing the parameters for all layer except the attached layer
@@ -12,10 +10,9 @@ TRAINING_MODE = 2
 
 
 class TransferLearning(BaseModel):
-    def __init__(self, batch_size=DEFAULT_MINI_BATCH_SIZE,
-                 num_loading_worker=DEFAULT_LOADING_WORKERS):
-        super(TransferLearning, self).__init__(batch_size=batch_size,
-                                               num_loading_workers=num_loading_worker)
+    def __init__(self, **kwargs):
+        super(TransferLearning, self).__init__(**kwargs)
+
         transferred_model = torchvision.models.resnet18()
         num_last_layer_feats = transferred_model.fc.in_features
         fully_connected = torch.nn.Linear(num_last_layer_feats, 10)
