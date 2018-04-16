@@ -1,11 +1,15 @@
 import torch
 import torch.nn.functional as F
-from base_model import BaseModel, run_model
+from base_model import (BaseModel, run_model,
+                        DEFAULT_MINI_BATCH_SIZE,
+                        DEFAULT_LOADING_WORKERS)
 
 
 class ConvNet(BaseModel):
-    def __init__(self):
-        super(ConvNet, self).__init__()
+    def __init__(self, batch_size=DEFAULT_MINI_BATCH_SIZE,
+                 num_loading_worker=DEFAULT_LOADING_WORKERS):
+        super(ConvNet, self).__init__(batch_size=batch_size,
+                                      num_loading_workers=num_loading_worker)
 
         self.conv1 = torch.nn.Conv2d(1, 20, 5)
         self.conv2 = torch.nn.Conv2d(20, 10, 5)

@@ -14,9 +14,13 @@ DEFAULT_MINI_BATCH_SIZE = 32
 
 
 class BaseModel(torch.nn.Module):
-    def __init__(self, use_gpu=False):
+    def __init__(self, use_gpu=True,
+                 batch_size=DEFAULT_MINI_BATCH_SIZE,
+                 num_loading_workers=DEFAULT_LOADING_WORKERS):
         super(BaseModel, self).__init__()
         self.use_gpu = use_gpu
+        self.batch_size = batch_size
+        self.num_loading_workers = num_loading_workers
 
     def _convert_data_to_tensors(self, data):
         x_test, y_test = data
@@ -30,7 +34,7 @@ class BaseModel(torch.nn.Module):
     def forward(self, x):
         raise NotImplementedError("Forward pass is not implemented.")
 
-    def train(self, epochs=DEFAULT_TRAINING_EPOCHS):
+    def train(self, epochs):
         self.training = True
         for e in range(epochs):
             epoch_loss = 0
@@ -87,16 +91,15 @@ class BaseModel(torch.nn.Module):
         plt.gray()
         plt.show()
 
-    def get_data_minibatch(self, train=False,
-                           n_mini_batch=DEFAULT_MINI_BATCH_SIZE):
+    def get_data_minibatch(self, train=False):
         tr = torchvision.transforms.Compose([
             torchvision.transforms.ToTensor()
         ])
         mnist_dataset = MNIST('../data', train=train,
                               download=True, transform=tr)
         loader = torch.utils.data.DataLoader(
-            mnist_dataset, batch_size=n_mini_batch,
-            shuffle=True, num_workers=DEFAULT_LOADING_WORKERS)
+            mnist_dataset, batch_size=self.batch_size,
+            shuffle=True, num_workers=self.num_loading_workers)
         return loader
 
 

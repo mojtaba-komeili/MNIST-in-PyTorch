@@ -1,11 +1,15 @@
 import torch
 import torch.nn.functional as F
-from base_model import BaseModel, run_model
+from base_model import (BaseModel, run_model,
+                        DEFAULT_MINI_BATCH_SIZE,
+                        DEFAULT_LOADING_WORKERS)
 
 
 class FullyConnected(BaseModel):
-    def __init__(self, n_hidden=120):
-        super(FullyConnected, self).__init__()
+    def __init__(self, n_hidden=120, batch_size=DEFAULT_MINI_BATCH_SIZE,
+                 num_loading_worker=DEFAULT_LOADING_WORKERS):
+        super(FullyConnected, self).__init__(batch_size=batch_size,
+                                             num_loading_workers=num_loading_worker)
         self.fc1 = torch.nn.Linear(28*28, n_hidden)
         self.fc2 = torch.nn.Linear(n_hidden, 10)
         self.optimizer = torch.optim.Adam(self.parameters())
